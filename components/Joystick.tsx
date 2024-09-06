@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function Joystick() {
@@ -8,18 +8,67 @@ export default function Joystick() {
   const maxDistance = (squareSize - smallCircleSize) / 2;
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState(0);
+  const isDragging = useRef(false);
 
-  const handleDrag = (event: any, info: any) => {
-    setPosition({
-      x: Math.max(Math.min(info.point.x, maxDistance), -maxDistance),
-      y: Math.max(Math.min(info.point.y, maxDistance), -maxDistance),
-    });
-  };
+  const determineSection = useCallback((x: number, y: number) => {
+    const invertedY = -y;
+    const thirdDistance = maxDistance / 3;
+    
+    // Adjust x-axis sensitivity
+    const xThreshold = maxDistance / 10; // 10% of max distance as threshold
+
+    if (invertedY > thirdDistance) {
+      return x < -xThreshold ? 1 : 2;
+    } else if (invertedY < -thirdDistance) {
+      return x < -xThreshold ? 5 : 6;
+    } else {
+      return x < -xThreshold ? 3 : 4;
+    }
+  }, [maxDistance]);
+
+  const getSectionCenter = useCallback((section: number) => {
+    const halfDistance = maxDistance / 2;
+    switch (section) {
+      case 1: return { x: -halfDistance * 1.5, y: -halfDistance * 2 };
+      case 2: return { x: halfDistance * 1.5, y: -halfDistance * 2 };
+      case 3: return { x: -halfDistance * 1.5, y: 0 };
+      case 4: return { x: halfDistance * 1.5, y: 0 };
+      case 5: return { x: -halfDistance * 1.5, y: halfDistance * 2 };
+      case 6: return { x: halfDistance * 1.5, y: halfDistance * 2 };
+      default: return { x: 0, y: 0 };
+    }
+  }, [maxDistance]);
+
+  const handleDragStart = useCallback(() => {
+    isDragging.current = true;
+  }, []);
+
+  const handleDrag = useCallback((event: any, info: any) => {
+    const newPosition = {
+      x: Math.max(Math.min(info.offset.x, maxDistance), -maxDistance),
+      y: Math.max(Math.min(info.offset.y, maxDistance), -maxDistance),
+    };
+    setPosition(newPosition);
+    setActiveSection(determineSection(newPosition.x, newPosition.y));
+  }, [determineSection, maxDistance]);
+
+  const handleDragEnd = useCallback(() => {
+    console.log(`Released in Section ${activeSection}`);
+    const sectionCenter = getSectionCenter(activeSection);
+    setPosition(sectionCenter);
+    isDragging.current = false;
+  }, [activeSection, getSectionCenter]);
+
+
+  const getSectionColor = useCallback((section: number) => 
+    activeSection === section ? 'bg-zinc-300' : 'bg-zinc-200'
+  , [activeSection]);
 
   return (
     <div className="fixed right-6 bottom-6 flex items-center justify-center">
       <div
-        className="bg-zinc-300 border-4 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
+        className="bg-zinc-300 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
         style={{ 
           width: squareSize, 
           height: squareSize,
@@ -27,16 +76,16 @@ export default function Joystick() {
       >
         {/* 6 sections */}
         <div className="absolute inset-0 grid grid-cols-2 grid-rows-3 pointer-events-none">
-          <div className="border border-zinc-200 border-t-0"></div>
-          <div className="border border-zinc-200 border-t-0"></div>
-          <div className="border border-zinc-200 border-l-0"></div>
-          <div className="border border-zinc-200 border-r-0"></div>
-          <div className="border border-zinc-200 border-b-0"></div>
-          <div className="border border-zinc-200 border-b-0"></div>
+          <div className={`border border-zinc-300 border-t-0 ${getSectionColor(1)}`}></div>
+          <div className={`border border-zinc-300 border-t-0 ${getSectionColor(2)}`}></div>
+          <div className={`border border-zinc-300 border-l-0 ${getSectionColor(3)}`}></div>
+          <div className={`border border-zinc-300 border-r-0 ${getSectionColor(4)}`}></div>
+          <div className={`border border-zinc-300 border-b-0 ${getSectionColor(5)}`}></div>
+          <div className={`border border-zinc-300 border-b-0 ${getSectionColor(6)}`}></div>
         </div>
         
         <motion.div
-          className="w-20 h-20 rounded-full shadow-xl bg-zinc-200 cursor-grab active:cursor-grabbing z-10"
+          className="w-20 h-20 rounded-full shadow-xl bg-zinc-100 cursor-grab active:cursor-grabbing z-10"
           drag
           dragConstraints={{
             top: -maxDistance,
@@ -46,14 +95,17 @@ export default function Joystick() {
           }}
           dragElastic={0}
           dragMomentum={false}
+          onDragStart={handleDragStart}
           onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          animate={isDragging.current ? undefined : position}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           style={{ 
             width: smallCircleSize,
             height: smallCircleSize,
-            x: position.x,
+            x: position.x ,
             y: position.y,
           }}
-          onDragEnd={() => setPosition({ x: 0, y: 0 })}
         />
       </div>
     </div>
