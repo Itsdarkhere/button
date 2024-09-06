@@ -4,7 +4,7 @@ import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 export default function Joystick() {
   const squareSize = 120;
-  const smallCircleSize = 48;
+  const smallCircleSize = 72;
   const maxDistance = (squareSize - smallCircleSize) / 2;
 
   const x = useMotionValue(0);
