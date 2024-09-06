@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { PanInfo, motion } from 'framer-motion';
 
 export default function Joystick() {
   const squareSize = 120;
@@ -44,7 +44,7 @@ export default function Joystick() {
     isDragging.current = true;
   }, []);
 
-  const handleDrag = useCallback((event: any, info: any) => {
+  const handleDrag = useCallback((event: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
     const newPosition = {
       x: Math.max(Math.min(info.offset.x, maxDistance), -maxDistance),
       y: Math.max(Math.min(info.offset.y, maxDistance), -maxDistance),
