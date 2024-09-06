@@ -1,32 +1,26 @@
 'use client'
-import React from 'react';
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function Joystick() {
   const squareSize = 120;
   const smallCircleSize = 72;
   const maxDistance = (squareSize - smallCircleSize) / 2;
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const rotateX = useTransform(y, [-maxDistance, maxDistance], ["-10deg", "10deg"]);
-  const rotateY = useTransform(x, [-maxDistance, maxDistance], ["10deg", "-10deg"]);
-
-  const springConfig = { damping: 20, stiffness: 200 };
-  const springX = useSpring(x, springConfig);
-  const springY = useSpring(y, springConfig);
+  const handleDrag = (event: any, info: any) => {
+    setPosition({
+      x: Math.max(Math.min(info.point.x, maxDistance), -maxDistance),
+      y: Math.max(Math.min(info.point.y, maxDistance), -maxDistance),
+    });
+  };
 
   return (
-    <motion.div 
-      className="fixed right-6 bottom-6 flex items-center justify-center"
-      style={{ perspective: 500 }}
-    >
-      <motion.div
+    <div className="fixed right-6 bottom-6 flex items-center justify-center">
+      <div
         className="bg-zinc-300 border-4 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
         style={{ 
-          rotateX, 
-          rotateY, 
           width: squareSize, 
           height: squareSize,
         }}
@@ -50,20 +44,18 @@ export default function Joystick() {
             right: maxDistance,
             bottom: maxDistance,
           }}
-          dragElastic={0.2}
+          dragElastic={0}
           dragMomentum={false}
+          onDrag={handleDrag}
           style={{ 
-            x: springX, 
-            y: springY,
             width: smallCircleSize,
-            height: smallCircleSize
+            height: smallCircleSize,
+            x: position.x,
+            y: position.y,
           }}
-          onDragEnd={() => {
-            x.set(0);
-            y.set(0);
-          }}
+          onDragEnd={() => setPosition({ x: 0, y: 0 })}
         />
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
