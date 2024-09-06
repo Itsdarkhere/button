@@ -68,7 +68,7 @@ export default function Joystick() {
   return (
     <div className="fixed right-6 bottom-6 flex items-center justify-center">
       <div
-        className="bg-zinc-300 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
+        className="bg-zinc-300 border-spacing-4 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
         style={{ 
           width: squareSize, 
           height: squareSize,
