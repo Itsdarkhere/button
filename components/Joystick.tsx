@@ -3,9 +3,9 @@ import React from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 export default function Joystick() {
-  const bigCircleSize = 120;
+  const squareSize = 120;
   const smallCircleSize = 48;
-  const maxDistance = (bigCircleSize - smallCircleSize) / 2;
+  const maxDistance = (squareSize - smallCircleSize) / 2;
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -23,11 +23,26 @@ export default function Joystick() {
       style={{ perspective: 500 }}
     >
       <motion.div
-        className="w-30 h-30 rounded-full bg-zinc-700 shadow-xl flex items-center justify-center"
-        style={{ rotateX, rotateY, width: bigCircleSize, height: bigCircleSize }}
+        className="bg-zinc-300 border-4 rounded-full overflow-hidden shadow-2xl flex items-center justify-center relative"
+        style={{ 
+          rotateX, 
+          rotateY, 
+          width: squareSize, 
+          height: squareSize,
+        }}
       >
+        {/* 6 sections */}
+        <div className="absolute inset-0 grid grid-cols-2 grid-rows-3 pointer-events-none">
+          <div className="border border-zinc-200 border-t-0"></div>
+          <div className="border border-zinc-200 border-t-0"></div>
+          <div className="border border-zinc-200 border-l-0"></div>
+          <div className="border border-zinc-200 border-r-0"></div>
+          <div className="border border-zinc-200 border-b-0"></div>
+          <div className="border border-zinc-200 border-b-0"></div>
+        </div>
+        
         <motion.div
-          className="w-12 h-12 rounded-full bg-zinc-400 shadow-md cursor-grab active:cursor-grabbing"
+          className="w-20 h-20 rounded-full shadow-xl bg-zinc-200 cursor-grab active:cursor-grabbing z-10"
           drag
           dragConstraints={{
             top: -maxDistance,
