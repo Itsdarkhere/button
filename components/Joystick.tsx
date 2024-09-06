@@ -1,8 +1,10 @@
 'use client'
 import React, { useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { PanInfo, motion } from 'framer-motion';
 
 export default function Joystick() {
+    const router = useRouter();
   const squareSize = 120;
   const smallCircleSize = 72;
   const maxDistance = (squareSize - smallCircleSize) / 2;
@@ -58,7 +60,24 @@ export default function Joystick() {
     const sectionCenter = getSectionCenter(activeSection);
     setPosition(sectionCenter);
     isDragging.current = false;
+    navigateTo(activeSection)
   }, [activeSection, getSectionCenter]);
+
+  const sectionToLetterMap: { [key: number]: string } = {
+    1: 'a',
+    2: 'b',
+    3: 'c',
+    4: 'd',
+    5: 'e',
+    6: 'f'
+  };
+
+  const navigateTo = (activeSection: number) => {
+    const letter = sectionToLetterMap[activeSection];
+    if (letter) {
+      router.push(`/${letter}`);
+    }
+  };
 
 
   const getSectionColor = useCallback((section: number) => 
